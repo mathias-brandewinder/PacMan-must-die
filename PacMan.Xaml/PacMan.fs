@@ -329,12 +329,12 @@ _______7./7 |      ! /7./_______
             let dx, dy = ghost.V
             let u,d,l,r = ghost.Body
             let u',d',l',r' = ghost.Eyes
-            let face, eye, canMove =
+            let face, eye =
                 match dx, dy with
-                | 0,-1 -> u, u', canGoUp (x,y)
-                | 0, 1 -> d, d', canGoDown (x,y)
-                | -1,0 -> l, l', canGoLeft (x,y)
-                | 1, 0 -> r, r', canGoRight (x,y)
+                | 0,-1 -> u, u'
+                | 0, 1 -> d, d'
+                | -1,0 -> l, l'
+                | 1, 0 -> r, r'
                 | _, _ -> invalidOp ""
 
             let isBackwards (a,b) =
