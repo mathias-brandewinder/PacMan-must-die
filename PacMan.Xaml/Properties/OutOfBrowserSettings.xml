@@ -1,0 +1,12 @@
+<OutOfBrowserSettings ShortName="PacMan Application" EnableGPUAcceleration="True" ShowInstallMenuItem="True">
+  <OutOfBrowserSettings.Blurb>PacMan on your desktop; at home, at work or on the go.</OutOfBrowserSettings.Blurb>
+  <OutOfBrowserSettings.WindowSettings>
+    <WindowSettings Title="PacMan Application" />
+  </OutOfBrowserSettings.WindowSettings>
+  <OutOfBrowserSettings.Icons>
+    <Icon Size="16,16">Icons/Icon16x16.png</Icon>
+    <Icon Size="32,32">Icons/Icon32x32.png</Icon>
+    <Icon Size="48,48">Icons/Icon48x48.png</Icon>
+    <Icon Size="128,128">Icons/Icon128x128.png</Icon>
+  </OutOfBrowserSettings.Icons>
+</OutOfBrowserSettings>
