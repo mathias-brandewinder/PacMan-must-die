@@ -339,29 +339,34 @@ _______7./7 |      ! /7./_______
 
             let isBackwards (a,b) =
                 (a <> 0 && a = -dx) || (b <> 0 && b = -dy)
+            
+            let possible =                        
+                [   if canGoUp (x,y) then yield Up
+                    if canGoDown (x,y) then yield Down
+                    if canGoLeft (x,y) then yield Left
+                    if canGoRight(x,y) then yield Right ]
+            
+            let fill move =
+                match move with
+                | Up -> fillUp (x,y)
+                | Down -> fillDown (x,y)
+                | Left -> fillLeft (x,y)
+                | Right -> fillRight (x,y)
 
             let directions =
                 if ghost.IsReturning then
-                    [   if canGoUp (x,y) then yield (0,-1), fillUp (x,y)
-                        if canGoDown (x,y) then yield (0,1), fillDown (x,y)
-                        if canGoLeft (x,y) then yield (-1,0), fillLeft (x,y)
-                        if canGoRight(x,y) then yield (1,0), fillRight (x,y) ]
-                    |> Seq.sortBy snd
-                    |> Seq.map fst
+                    possible
+                    |> Seq.sortBy fill
                     |> Seq.head
+                    |> moveToDir
                 else
-                    let possibleDirections =
-                        [   if canGoUp (x,y) then yield Up
-                            if canGoDown (x,y) then yield Down
-                            if canGoLeft (x,y) then yield Left
-                            if canGoRight(x,y) then yield Right ]
-                        |> Set.ofList
-                    possibleDirections
+                    possible
+                    |> Set.ofList
                     |> decision (ghost.V |> dirToMove)
                     |> fun d -> 
-                        if (possibleDirections |> Set.contains d) 
+                        if (possible |> Set.ofSeq |> Set.contains d) 
                         then d 
-                        else randomMove possibleDirections
+                        else randomMove (possible |> Set.ofSeq)
                     |> moveToDir
 
             let dx, dy = directions
