@@ -1,5 +1,7 @@
 ﻿namespace PacMan
 
+open PacMan.Ghosts
+
 type Paint(aarrggbb:int) =
     static member White = Paint(0xFFFFFFFF)
     static member Black = Paint(0x00000000)
@@ -334,26 +336,35 @@ _______7./7 |      ! /7./_______
                 | -1,0 -> l, l', canGoLeft (x,y)
                 | 1, 0 -> r, r', canGoRight (x,y)
                 | _, _ -> invalidOp ""
+
             let isBackwards (a,b) =
                 (a <> 0 && a = -dx) || (b <> 0 && b = -dy)
-            let directions = 
-                [
-                if canGoUp (x,y) then yield (0,-1), fillUp (x,y)
-                if canGoDown (x,y) then yield (0,1), fillDown (x,y)
-                if canGoLeft (x,y) then yield (-1,0), fillLeft (x,y)
-                if canGoRight(x,y) then yield (1,0), fillRight (x,y)
-                ]
+
             let directions =
                 if ghost.IsReturning then
-                    directions
+                    [   if canGoUp (x,y) then yield (0,-1), fillUp (x,y)
+                        if canGoDown (x,y) then yield (0,1), fillDown (x,y)
+                        if canGoLeft (x,y) then yield (-1,0), fillLeft (x,y)
+                        if canGoRight(x,y) then yield (1,0), fillRight (x,y) ]
                     |> Seq.sortBy snd
                     |> Seq.map fst
+                    |> Seq.head
                 else
-                    directions
-                    |> Seq.map fst
-                    |> Seq.unsort
-                    |> Seq.sortBy isBackwards
-            let dx, dy = directions |> Seq.head
+                    let possibleDirections =
+                        [   if canGoUp (x,y) then yield Up
+                            if canGoDown (x,y) then yield Down
+                            if canGoLeft (x,y) then yield Left
+                            if canGoRight(x,y) then yield Right ]
+                        |> Set.ofList
+                    possibleDirections
+                    |> decision (ghost.V |> dirToMove)
+                    |> fun d -> 
+                        if (possibleDirections |> Set.contains d) 
+                        then d 
+                        else randomMove possibleDirections
+                    |> moveToDir
+
+            let dx, dy = directions
             let x,y = go (x,y) (dx,dy)
             let returning =
                 if ghost.IsReturning && 0 = (fillValue (x,y) (0,0))
