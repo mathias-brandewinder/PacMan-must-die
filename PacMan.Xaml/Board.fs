@@ -38,17 +38,19 @@ type IInput =
     abstract member IsLeft : bool
     abstract member IsRight : bool
 
+[<Measure>] type pix
+
 module Board =
 
-    let TileSize = 8
+    let TileSize = 8<pix>
 
     type Move = Up | Down | Left | Right
 
-    type Tile = Nothing | Wall | Power | Pill
+    type TileContent = Nothing | Wall | Power | Pill
 
-    let tileFromPix (x, y) = 
-        int ((x + 6) / TileSize), 
-        int ((y + 6) / TileSize)
+    let tileFromPix (x:int<pix>, y:int<pix>) = 
+        int ((x + 6<pix>) / TileSize), 
+        int ((y + 6<pix>) / TileSize)
 
     let isWall = function
         | '_' | '|' | '!' | '/' | '7' | 'L' | 'J' | '-' | '*' -> true
@@ -68,8 +70,8 @@ module Board =
     let noWall (board: string []) (x, y) move =
         let tx, ty =
             match move with
-            | Up    -> tileFromPix (x, y - 4)
-            | Down  -> tileFromPix (x, y + 5)
-            | Left  -> tileFromPix (x - 4, y)
-            | Right -> tileFromPix (x + 5, y)
+            | Up    -> tileFromPix (x, y - 4<pix>)
+            | Down  -> tileFromPix (x, y + 5<pix>)
+            | Left  -> tileFromPix (x - 4<pix>, y)
+            | Right -> tileFromPix (x + 5<pix>, y)
         tileAt board tx ty = Wall |> not     

@@ -33,9 +33,9 @@ type Ghost = {
     Eyes : IContent * IContent * IContent * IContent
     Body : IContent * IContent * IContent * IContent
     Image : IContent
-    X : int
-    Y : int
-    V : int * int
+    X : int<pix>
+    Y : int<pix>
+    V : int<pix> * int<pix>
     IsReturning : bool
     }
 
@@ -49,7 +49,7 @@ type Game(scene:IScene, input:IInput) =
     let add item = scene.Contents.Add(item)
     let remove item = scene.Contents.Remove(item)
     let contains item = scene.Contents.Contains(item)
-    let set (element:IContent) (x,y) = element.Move(x - 16 |> float, y + 8 |> float)
+    let set (element:IContent) (x: int<pix>, y: int<pix>) = element.Move(x - 16<pix> |> float, y + 8<pix> |> float)
     let maze = "
 ##/------------7/------------7##
 ##|............|!............|##
@@ -204,14 +204,14 @@ _______7./7 |      ! /7./_______
     
     let mutable finished = false
     let mutable lives = [for _ in 1..9 -> load "pl1"]
-    do  lives |> List.iteri (fun i life -> add life; set life (16+16*i,32*8))
+    do  lives |> List.iteri (fun i life -> add life; set life (16<pix> + 16<pix> * i, (32*8<pix>)))
     do  lives <- lives |> List.rev
     let decLives () =
         lives <-
             match lives with
             | [] -> 
                 let text = createText "GAME OVER"
-                set text (12*8, 15*8)
+                set text (12 * TileSize, 15 * TileSize)
                 add text
                 finished <- true
                 []
@@ -221,17 +221,17 @@ _______7./7 |      ! /7./_______
 
     let ghost_starts = 
         [
-            "red", (16, 16), (1,0)
-            "cyan", (14, 16), (1,0)
-            "pink" , (16, 14), (0,-1)
-            "orange" , (18, 16), (-1,0)
+            "red", (16, 16), (1<pix>, 0<pix>)
+            "cyan", (14, 16), (1<pix>, 0<pix>)
+            "pink" , (16, 14), (0<pix>, -1<pix>)
+            "orange" , (18, 16), (-1<pix>, 0<pix>)
         ]
         |> List.map (fun (color,(x,y),v) -> 
             let blue = load "blue"
             let eyes = load "eyeu", load "eyed", load "eyel", load "eyer"
             let body = load (color+"u"), load (color+"d"), load (color+"l"), load (color+"r")
             let _,image,_,_ = body
-            { Blue=blue; Eyes=eyes; Body=body; X=x*8-7; Y=y*8-3; V=v; Image=image; IsReturning=false }
+            { Blue=blue; Eyes=eyes; Body=body; X=x * TileSize - 7<pix>; Y = y * TileSize - 3<pix>; V=v; Image=image; IsReturning=false }
         )
     let mutable ghosts = ghost_starts
     do  ghosts |> List.iter (fun ghost -> 
@@ -242,35 +242,35 @@ _______7./7 |      ! /7./_______
     let mutable score = 0
     let mutable bonus = 0
     let mutable bonuses = []
-    let x = ref (16 * 8 - 7)
-    let y = ref (24 * 8 - 3)
-    let v = ref (0,0)
+    let x = ref (16 * TileSize - 7<pix>)
+    let y = ref (24 * TileSize - 3<pix>)
+    let v = ref (0<pix>, 0<pix>)
     let pacman = ref p
     do  add !pacman
     do  set !pacman (!x,!y)
     let mutable powerCount = 0
 
-    let fillValue (x,y) (ex,ey) =
+    let fillValue (x: int<pix>, y: int<pix>) (ex: int<pix>, ey: int<pix>) =
         let bx, by = tileFromPix (x + ex, y + ey)
         route_home.[by].[bx]
 
-    let verticallyAligned (x,y) = x % TileSize = 5
-    let horizontallyAligned (x,y) = y % TileSize = 5
+    let verticallyAligned (x,y) = x % TileSize = 5<pix>
+    let horizontallyAligned (x,y) = y % TileSize = 5<pix>
 
     let canGoUp (x,y) = verticallyAligned (x,y) && noWall lines (x,y) Up
     let canGoDown (x,y) = verticallyAligned (x,y) && noWall lines (x,y) Down
     let canGoLeft (x,y) = horizontallyAligned (x,y) && noWall lines (x,y) Left
     let canGoRight (x,y) = horizontallyAligned (x,y) && noWall lines (x,y) Right
 
-    let fillUp (x,y) = fillValue (x,y) (0,-4)
-    let fillDown (x,y) = fillValue (x,y) (0,5)
-    let fillLeft (x,y) = fillValue (x,y) (-4,0)
-    let fillRight (x,y) = fillValue (x,y) (5,0)
+    let fillUp (x,y) = fillValue (x,y) (0<pix>, -4<pix>)
+    let fillDown (x,y) = fillValue (x,y) (0<pix>,5<pix>)
+    let fillLeft (x,y) = fillValue (x,y) (-4<pix>,0<pix>)
+    let fillRight (x,y) = fillValue (x,y) (5<pix>,0<pix>)
 
-    let go (x,y) (dx,dy) =
+    let go (x: int<pix>, y: int<pix>) (dx: int<pix>, dy: int<pix>) =
         let x = 
-            if   dx = -1 && x = 0 then 30 * TileSize
-            elif dx = 1  && x = 30 * TileSize then 0
+            if   dx = -1<pix> && x = 0<pix> then 30 * TileSize
+            elif dx = 1<pix>  && x = 30 * TileSize then 0<pix>
             else x
         x + dx, y + dy
 
@@ -282,14 +282,14 @@ _______7./7 |      ! /7./_______
             let u',d',l',r' = ghost.Eyes
             let face, eye =
                 match dx, dy with
-                | 0,-1 -> u, u'
-                | 0, 1 -> d, d'
-                | -1,0 -> l, l'
-                | 1, 0 -> r, r'
+                | 0<pix>,-1<pix> -> u, u'
+                | 0<pix>, 1<pix> -> d, d'
+                | -1<pix>,0<pix> -> l, l'
+                | 1<pix>, 0<pix> -> r, r'
                 | _, _ -> invalidOp ""
 
-            let isBackwards (a,b) =
-                (a <> 0 && a = -dx) || (b <> 0 && b = -dy)
+//            let isBackwards (a,b) =
+//                (a <> 0 && a = -dx) || (b <> 0 && b = -dy)
             
             let possible =                        
                 [   if canGoUp (x,y) then yield Up
@@ -323,7 +323,7 @@ _______7./7 |      ! /7./_______
             let dx, dy = directions
             let x,y = go (x,y) (dx,dy)
             let returning =
-                if ghost.IsReturning && 0 = (fillValue (x,y) (0,0))
+                if ghost.IsReturning && 0 = (fillValue (x,y) (0<pix>,0<pix>))
                 then false
                 else ghost.IsReturning
             remove ghost.Image
@@ -347,16 +347,16 @@ _______7./7 |      ! /7./_______
     let updatePacman () =
         let inputs = 
             [
-            if input.IsUp then yield canGoUp (!x,!y), (0,-1), pu
-            if input.IsDown then yield canGoDown (!x,!y), (0,1), pd
-            if input.IsLeft  then yield canGoLeft (!x,!y), (-1,0), pl
-            if input.IsRight then yield canGoRight (!x,!y), (1,0), pr
+            if input.IsUp then yield canGoUp (!x,!y), (0<pix>,-1<pix>), pu
+            if input.IsDown then yield canGoDown (!x,!y), (0<pix>,1<pix>), pd
+            if input.IsLeft  then yield canGoLeft (!x,!y), (-1<pix>,0<pix>), pl
+            if input.IsRight then yield canGoRight (!x,!y), (1<pix>,0<pix>), pr
             ] 
         let move ((dx,dy),(d1,d2)) =
             let x', y' = go (!x,!y) (dx,dy)
             x := x'; y := y'; v := (dx,dy)
             remove !pacman
-            let d = if (!x/6 + !y/6) % 2 = 0 then d1 else d2
+            let d = if (!x/6<pix> + !y/6<pix>) % 2 = 0 then d1 else d2
             add d
             pacman := d
         let availableDirections =
@@ -369,11 +369,11 @@ _______7./7 |      ! /7./_______
         else
             let goForward =
                 match !v with
-                | 0,-1 -> canGoUp(!x,!y), pu
-                | 0,1  -> canGoDown(!x,!y), pd
-                | -1,0 -> canGoLeft(!x,!y), pl
-                | 1, 0 -> canGoRight(!x,!y), pr
-                | 0, 0 -> false, pu
+                | 0<pix>,-1<pix> -> canGoUp(!x,!y), pu
+                | 0<pix>,1<pix>  -> canGoDown(!x,!y), pd
+                | -1<pix>,0<pix> -> canGoLeft(!x,!y), pl
+                | 1<pix>, 0<pix> -> canGoRight(!x,!y), pr
+                | 0<pix>, 0<pix> -> false, pu
                 | _ -> invalidOp ""
             if fst goForward && inputs.Length > 0 then
                 (!v, snd goForward) |> move 
@@ -422,10 +422,10 @@ _______7./7 |      ! /7./_______
         let px, py = !x, !y
         ghosts |> List.filter (fun ghost ->
             let x,y = ghost.X, ghost.Y
-            ((px >= x && px < x + 13) ||
-             (x < px + 13 && x >= px)) &&
-            ((py >= y && py < y + 13) ||
-             (y < py + 13 && y >= py))
+            ((px >= x && px < x + 13<pix>) ||
+             (x < px + 13<pix> && x >= px)) &&
+            ((py >= y && py < y + 13<pix>) ||
+             (y < py + 13<pix> && y >= py))
         )
 
     let handleTouching () =

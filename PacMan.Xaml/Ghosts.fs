@@ -7,20 +7,20 @@ module Ghosts =
 
     let private rng = Random()
 
-    let dirToMove (dx, dy) =
+    let dirToMove (dx: int<pix>, dy: int<pix>) =
         match dx, dy with
-        | 0,-1 -> Up
-        | 0, 1 -> Down
-        | -1,0 -> Left
-        | 1, 0 -> Right
+        | 0<pix>,-1<pix> -> Up
+        | 0<pix>, 1<pix> -> Down
+        | -1<pix>,0<pix> -> Left
+        | 1<pix>, 0<pix> -> Right
         | _, _ -> invalidOp ""
 
     let moveToDir move =
         match move with
-        | Up    -> 0,-1
-        | Down  -> 0, 1
-        | Left  -> -1,0
-        | Right -> 1, 0
+        | Up    -> 0<pix>,-1<pix>
+        | Down  -> 0<pix>, 1<pix>
+        | Left  -> -1<pix>,0<pix>
+        | Right -> 1<pix>, 0<pix>
 
     let backwards move =
         match move with
