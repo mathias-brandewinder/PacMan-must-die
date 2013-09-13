@@ -173,6 +173,9 @@ _______7./7 |      ! /7./_______
             )
         )
 
+    // wrap up all state in one function
+    let tileFrom = Board.tileAnalyzer lines scene tiles
+
     let route_home =
         let numbers =
             lines |> Array.map (fun line ->
@@ -268,12 +271,14 @@ _______7./7 |      ! /7./_______
     let newGhosts () =
         ghosts |> List.map (fun ghost ->
 
-            let view = lineOfSight lines (!x, !y, powerCount) ghosts (ghost.X, ghost.Y)
+            let pacman = (!x, !y, powerCount)
+            let view = lineOfSight tileFrom pacman ghosts (ghost.X, ghost.Y)
 
             let x, y = ghost.X, ghost.Y
             let dx, dy = ghost.V
             let u,d,l,r = ghost.Body
             let u',d',l',r' = ghost.Eyes
+
             let face, eye =
                 match dx, dy with
                 | 0<pix>,-1<pix> -> u, u'
@@ -282,7 +287,6 @@ _______7./7 |      ! /7./_______
                 | 1<pix>, 0<pix> -> r, r'
                 | _, _ -> invalidOp ""
             
-
             let possible =                        
                 [   if canGoUp (x,y) then yield Up
                     if canGoDown (x,y) then yield Down
@@ -371,18 +375,17 @@ _______7./7 |      ! /7./_______
                 (!v, snd goForward) |> move 
 
         let tx, ty = tileFromPix(!x, !y)
-        match Board.tileAt lines tx ty with
+
+        match tileFrom (tx, ty) with
         | Pill ->
-            if contains (tiles.[ty].[tx]) then
-                score <- score + 10
-                remove (tiles.[ty].[tx])
-                totalDots <- totalDots - 1
+            score <- score + 10
+            remove (tiles.[ty].[tx])
+            totalDots <- totalDots - 1
         | Power -> 
-            if contains (tiles.[ty].[tx]) then
-                score <- score + 50
-                powerCount <- 500
-                bonus <- 0
-                totalDots <- totalDots - 1
+            score <- score + 50
+            powerCount <- 500
+            bonus <- 0
+            totalDots <- totalDots - 1
             remove (tiles.[ty].[tx])
         | _ -> ignore ()
 
