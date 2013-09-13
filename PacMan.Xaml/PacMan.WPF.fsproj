@@ -147,6 +147,7 @@
     </Content>
     <Content Include="Properties\OutOfBrowserSettings.xml" />
     <Compile Include="Images.fs" />
+    <Compile Include="Board.fs" />
     <Compile Include="Ghosts.fs" />
     <Compile Include="PacMan.fs" />
     <Compile Include="App.fs" />

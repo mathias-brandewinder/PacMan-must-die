@@ -1,44 +1,9 @@
 ﻿namespace PacMan
 
 open PacMan.Ghosts
+open PacMan.Board
 
-type Paint(aarrggbb:int) =
-    static member White = Paint(0xFFFFFFFF)
-    static member Black = Paint(0x00000000)
-    static member Blue = Paint(0xFF0000FF)
-    static member Yellow = Paint(0xFFFFFF00)
-    static member Transparent = Paint(0x00FFFFFF)
-    member this.Color = aarrggbb 
 
-type IScene =
-    abstract member AddLayer : unit -> ILayer
-    abstract member CreateBitmap : Paint * int seq -> IBitmap
-    abstract member CreateBitmap : int * int * int[][] -> IBitmap
-    abstract member LoadBitmap : string -> IBitmap
-    abstract member CreateText : string -> ITextContent
-    abstract member Contents : IContents
-and  IContents = 
-    abstract member Add : IContent -> unit
-    abstract member Remove : IContent -> unit
-    abstract member Contains: IContent -> bool
-and IContent =
-    abstract member Control : obj
-    abstract member Move : float * float -> unit
-    abstract member SetOpacity : float -> unit
-and IBitmap =
-    abstract member CreateContent : unit -> IContent
-and ILayer =
-    inherit IContent
-    abstract member Contents : IContents
-and ITextContent =
-    inherit IContent
-    abstract member SetText: string -> unit
-
-type IInput =
-    abstract member IsUp : bool
-    abstract member IsDown : bool
-    abstract member IsLeft : bool
-    abstract member IsRight : bool
 
 [<AutoOpen>]
 module Algorithm =
@@ -214,7 +179,7 @@ _______7./7 |      ! /7./_______
         lines |> Array.mapi (fun y line ->
             line.ToCharArray() |> Array.mapi (fun x item ->
                 let tile = toTile item |> toImage
-                set tile (x * 8, y * 8)
+                set tile (x * TileSize, y * TileSize)
                 if isEdible item then totalDots <- totalDots + 1
                 if isWall item 
                 then walls.Contents.Add tile |> ignore
@@ -236,11 +201,6 @@ _______7./7 |      ! /7./_______
         flood canFill fill (16,16)
         numbers
 
-    let tileAt x y =
-        if x < 0 || x > 30 then ' '
-        else lines.[y].[x]
-
-    let isWallAt (x,y) = tileAt x y |> isWall
     let p = load "p"
     let pu = load "pu1", load "pu2"
     let pd = load "pd1", load "pd2"
@@ -296,15 +256,15 @@ _______7./7 |      ! /7./_______
     let mutable powerCount = 0
 
     let noWall (x,y) (ex,ey) =
-        let bx, by = int ((x+6+ex)/8), int ((y+6+ey)/8)
-        isWallAt (bx,by) |> not
+        let bx, by = tileFromPix (x + ex, y + ey)
+        Board.tileAt lines bx by = Wall |> not
 
     let fillValue (x,y) (ex,ey) =
-        let bx, by = int ((x+6+ex)/8), int ((y+6+ey)/8)
+        let bx, by = tileFromPix (x + ex, y + ey)
         route_home.[by].[bx]
 
-    let verticallyAligned (x,y) = x % 8 = 5
-    let horizontallyAligned (x,y) = y % 8 = 5
+    let verticallyAligned (x,y) = x % TileSize = 5
+    let horizontallyAligned (x,y) = y % TileSize = 5
 
     let canGoUp (x,y) = verticallyAligned (x,y) && noWall (x,y) (0,-4)
     let canGoDown (x,y) = verticallyAligned (x,y) && noWall (x,y) (0,5)
@@ -318,8 +278,8 @@ _______7./7 |      ! /7./_______
 
     let go (x,y) (dx,dy) =
         let x = 
-            if   dx = -1 && x = 0 then 30 * 8
-            elif dx = 1  && x = 30 *8 then 0
+            if   dx = -1 && x = 0 then 30 * TileSize
+            elif dx = 1  && x = 30 * TileSize then 0
             else x
         x + dx, y + dy
 
@@ -426,23 +386,39 @@ _______7./7 |      ! /7./_______
                 | _ -> invalidOp ""
             if fst goForward && inputs.Length > 0 then
                 (!v, snd goForward) |> move 
-        let tx, ty = int ((!x+6)/8), int ((!y+6)/8)
-        if tileAt tx ty = '.' then
+
+        let tx, ty = tileFromPix(!x, !y)
+        match Board.tileAt lines tx ty with
+        | Pill ->
             if contains (tiles.[ty].[tx]) then
                 score <- score + 10
                 remove (tiles.[ty].[tx])
                 totalDots <- totalDots - 1
-        if tileAt tx ty = 'o' then
+        | Power -> 
             if contains (tiles.[ty].[tx]) then
                 score <- score + 50
                 powerCount <- 500
                 bonus <- 0
                 totalDots <- totalDots - 1
             remove (tiles.[ty].[tx])
+        | _ -> ignore ()
+
+//        if tileAt tx ty = '.' then
+//            if contains (tiles.[ty].[tx]) then
+//                score <- score + 10
+//                remove (tiles.[ty].[tx])
+//                totalDots <- totalDots - 1
+//        if tileAt tx ty = 'o' then
+//            if contains (tiles.[ty].[tx]) then
+//                score <- score + 50
+//                powerCount <- 500
+//                bonus <- 0
+//                totalDots <- totalDots - 1
+//            remove (tiles.[ty].[tx])
         set !pacman (!x,!y)
         if totalDots = 0 then
             let text = createText "LEVEL COMPLETED"
-            set text (7*8, 15*8)
+            set text (7 * TileSize, 15 * TileSize)
             add text
             finished <- true
 
