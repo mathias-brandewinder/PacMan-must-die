@@ -28,16 +28,7 @@ module Seq =
         System.Linq.Enumerable.OrderBy(xs,System.Func<_,_>(f))
         |> Seq.readonly
 
-type Ghost = {
-    Blue : IContent
-    Eyes : IContent * IContent * IContent * IContent
-    Body : IContent * IContent * IContent * IContent
-    Image : IContent
-    X : int<pix>
-    Y : int<pix>
-    V : int<pix> * int<pix>
-    IsReturning : bool
-    }
+
 
 type Game(scene:IScene, input:IInput) =
     let createText text = scene.CreateText(text)
@@ -276,6 +267,9 @@ _______7./7 |      ! /7./_______
 
     let newGhosts () =
         ghosts |> List.map (fun ghost ->
+
+            let view = lineOfSight lines (!x, !y, powerCount) ghosts (ghost.X, ghost.Y)
+
             let x, y = ghost.X, ghost.Y
             let dx, dy = ghost.V
             let u,d,l,r = ghost.Body
@@ -287,7 +281,8 @@ _______7./7 |      ! /7./_______
                 | -1<pix>,0<pix> -> l, l'
                 | 1<pix>, 0<pix> -> r, r'
                 | _, _ -> invalidOp ""
-            let view = lineOfSight lines (x, y)
+            
+
             let possible =                        
                 [   if canGoUp (x,y) then yield Up
                     if canGoDown (x,y) then yield Down
@@ -310,7 +305,7 @@ _______7./7 |      ! /7./_______
                 else
                     possible
                     |> Set.ofList
-                    |> decision (ghost.V |> dirToMove)
+                    |> decision (ghost.V |> dirToMove) view
                     |> fun d -> 
                         if (possible |> Set.ofSeq |> Set.contains d) 
                         then d 

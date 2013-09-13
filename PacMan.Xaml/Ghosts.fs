@@ -35,7 +35,7 @@ module Ghosts =
         |> Set.toArray 
         |> fun c -> c.[i]
         
-    let decision (current: Move) (choices: Move Set) =
+    let decision (current: Move) (lineOfSight: Sight) (choices: Move Set) =
         let restricted = 
             choices 
             |> Set.filter (fun c -> not (c = backwards current))
