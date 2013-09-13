@@ -42,6 +42,8 @@ module Board =
 
     let TileSize = 8
 
+    type Move = Up | Down | Left | Right
+
     type Tile = Nothing | Wall | Power | Pill
 
     let tileFromPix (x, y) = 
@@ -52,6 +54,8 @@ module Board =
         | '_' | '|' | '!' | '/' | '7' | 'L' | 'J' | '-' | '*' -> true
         | _ -> false
     
+    let contains (scene: IScene) (item: IContent) = scene.Contents.Contains(item)
+
     let tileAt (board: string []) x y =
         if x < 0 || x > 30 then Nothing
         else 
@@ -60,3 +64,12 @@ module Board =
             elif symbol = 'o' then Power
             elif (isWall symbol) then Wall
             else Nothing
+
+    let noWall (board: string []) (x, y) move =
+        let tx, ty =
+            match move with
+            | Up    -> tileFromPix (x, y - 4)
+            | Down  -> tileFromPix (x, y + 5)
+            | Left  -> tileFromPix (x - 4, y)
+            | Right -> tileFromPix (x + 5, y)
+        tileAt board tx ty = Wall |> not     

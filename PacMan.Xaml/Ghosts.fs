@@ -3,8 +3,7 @@
 module Ghosts =
     
     open System
-
-    type Move = Up | Down | Left | Right
+    open Board
 
     let private rng = Random()
 

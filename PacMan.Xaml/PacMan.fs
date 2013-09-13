@@ -3,8 +3,6 @@
 open PacMan.Ghosts
 open PacMan.Board
 
-
-
 [<AutoOpen>]
 module Algorithm =
     let flood canFill fill (x,y) =
@@ -167,10 +165,6 @@ _______7./7 |      ! /7./_______
         | 'o' -> power
         | _ -> blank
 
-    let isWall = function
-        | '_' | '|' | '!' | '/' | '7' | 'L' | 'J' | '-' | '*' -> true
-        | _ -> false
-
     let isEdible = function '.' | 'o' -> true | _ -> false
     let mutable totalDots = 0
     let walls = scene.AddLayer()
@@ -187,6 +181,7 @@ _______7./7 |      ! /7./_______
                 tile
             )
         )
+
     let route_home =
         let numbers =
             lines |> Array.map (fun line ->
@@ -255,10 +250,6 @@ _______7./7 |      ! /7./_______
     do  set !pacman (!x,!y)
     let mutable powerCount = 0
 
-    let noWall (x,y) (ex,ey) =
-        let bx, by = tileFromPix (x + ex, y + ey)
-        Board.tileAt lines bx by = Wall |> not
-
     let fillValue (x,y) (ex,ey) =
         let bx, by = tileFromPix (x + ex, y + ey)
         route_home.[by].[bx]
@@ -266,10 +257,10 @@ _______7./7 |      ! /7./_______
     let verticallyAligned (x,y) = x % TileSize = 5
     let horizontallyAligned (x,y) = y % TileSize = 5
 
-    let canGoUp (x,y) = verticallyAligned (x,y) && noWall (x,y) (0,-4)
-    let canGoDown (x,y) = verticallyAligned (x,y) && noWall (x,y) (0,5)
-    let canGoLeft (x,y) = horizontallyAligned (x,y) && noWall (x,y) (-4,0)
-    let canGoRight (x,y) = horizontallyAligned (x,y) && noWall (x,y) (5,0)
+    let canGoUp (x,y) = verticallyAligned (x,y) && noWall lines (x,y) Up
+    let canGoDown (x,y) = verticallyAligned (x,y) && noWall lines (x,y) Down
+    let canGoLeft (x,y) = horizontallyAligned (x,y) && noWall lines (x,y) Left
+    let canGoRight (x,y) = horizontallyAligned (x,y) && noWall lines (x,y) Right
 
     let fillUp (x,y) = fillValue (x,y) (0,-4)
     let fillDown (x,y) = fillValue (x,y) (0,5)
@@ -403,18 +394,6 @@ _______7./7 |      ! /7./_______
             remove (tiles.[ty].[tx])
         | _ -> ignore ()
 
-//        if tileAt tx ty = '.' then
-//            if contains (tiles.[ty].[tx]) then
-//                score <- score + 10
-//                remove (tiles.[ty].[tx])
-//                totalDots <- totalDots - 1
-//        if tileAt tx ty = 'o' then
-//            if contains (tiles.[ty].[tx]) then
-//                score <- score + 50
-//                powerCount <- 500
-//                bonus <- 0
-//                totalDots <- totalDots - 1
-//            remove (tiles.[ty].[tx])
         set !pacman (!x,!y)
         if totalDots = 0 then
             let text = createText "LEVEL COMPLETED"
