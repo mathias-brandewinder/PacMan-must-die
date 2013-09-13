@@ -48,6 +48,12 @@ module Board =
 
     type TileContent = Nothing | Wall | Power | Pill
 
+    type Sight = { 
+        Up: TileContent list;
+        Down: TileContent list;
+        Left: TileContent list;
+        Right: TileContent list; }
+
     let tileFromPix (x:int<pix>, y:int<pix>) = 
         int ((x + 6<pix>) / TileSize), 
         int ((y + 6<pix>) / TileSize)
@@ -75,3 +81,20 @@ module Board =
             | Left  -> tileFromPix (x - 4<pix>, y)
             | Right -> tileFromPix (x + 5<pix>, y)
         tileAt board tx ty = Wall |> not     
+
+    let lineOfSight (board: string []) (x: int<pix>, y: int<pix>) =
+        let X, Y = tileFromPix (x, y)
+        let rec search line (x, y) (dx, dy) =
+            let x = 
+                if x + dx > 30 then 0
+                elif x + dx < 0 then 30
+                else x + dx
+            let y = y + dy
+            let tile = tileAt board x y
+            let line' = tile :: line            
+            if tile = Wall then line' else search line' (x, y) (dx, dy)
+        let up = search [] (X, Y) (0, -1) |> List.rev
+        let down = search [] (X, Y) (0, 1) |> List.rev
+        let left = search [] (X, Y) (-1, 0) |> List.rev
+        let right = search [] (X, Y) (1, 0) |> List.rev
+        { Up = up; Down = down; Left = left; Right = right; }

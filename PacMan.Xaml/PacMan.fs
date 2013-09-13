@@ -287,10 +287,7 @@ _______7./7 |      ! /7./_______
                 | -1<pix>,0<pix> -> l, l'
                 | 1<pix>, 0<pix> -> r, r'
                 | _, _ -> invalidOp ""
-
-//            let isBackwards (a,b) =
-//                (a <> 0 && a = -dx) || (b <> 0 && b = -dy)
-            
+            let view = lineOfSight lines (x, y)
             let possible =                        
                 [   if canGoUp (x,y) then yield Up
                     if canGoDown (x,y) then yield Down
@@ -400,7 +397,6 @@ _______7./7 |      ! /7./_______
             set text (7 * TileSize, 15 * TileSize)
             add text
             finished <- true
-
 
     let updatePower () =
         if powerCount > 0 then
