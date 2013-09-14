@@ -51,7 +51,7 @@ module Brains =
         let options = if (restricted |> Set.count > 0)
                       then restricted
                       else choices
-        let pacDirection = pacManVisible options lineOfSight
+        let pacDirection = pacManVisible choices lineOfSight
         match pacDirection with
               | Some move -> move
               | None -> randomMove options
