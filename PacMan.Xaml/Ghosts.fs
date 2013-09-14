@@ -4,8 +4,7 @@ module Ghosts =
     
     open System
     open Board
-
-    let private rng = Random()
+    open Brains
 
     let dirToMove (dx: int<pix>, dy: int<pix>) =
         match dx, dy with
@@ -22,19 +21,6 @@ module Ghosts =
         | Left  -> -1<pix>,0<pix>
         | Right -> 1<pix>, 0<pix>
 
-    let backwards move =
-        match move with
-        | Up -> Down
-        | Down -> Up
-        | Left -> Right
-        | Right -> Left
-
-    let randomMove (choices: Move Set) =
-        let i = rng.Next(0, Set.count choices)
-        choices 
-        |> Set.toArray 
-        |> fun c -> c.[i]
-
     let pacManVisible options lineOfSight =
         let creaturesInDirection directionVector = directionVector |> List.collect snd
         let containsPacMan creatures = match List.tryFind (fun c -> match c with
@@ -49,10 +35,8 @@ module Ghosts =
         else if(Set.contains Right options && lineOfSight.Right |> creaturesInDirection |> containsPacMan) then Some Right
         else None
 
-    let decision (current: Move) (lineOfSight: Sight) (choices: Move Set) =
         let restricted =
             choices
-            |> Set.filter (fun c -> not (c = backwards current))
         let options = if (restricted |> Set.count > 0)
                       then restricted
                       else choices

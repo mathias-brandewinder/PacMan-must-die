@@ -53,19 +53,11 @@ type Ghost = {
 
 module Board =
 
+    open PacMan.Brains
+
     let TileSize = 8<pix>
 
-    type Move = Up | Down | Left | Right
-
-    type TileContent = Nothing | Wall | Power | Pill
-
-    type Creature = Nobody | PacMan of int | Ghost | WeakGhost
-
-    type Sight = { 
-        Up:    (TileContent * Creature list) list;
-        Down:  (TileContent * Creature list) list;
-        Left:  (TileContent * Creature list) list;
-        Right: (TileContent * Creature list) list; }
+    type TileAt = (int * int) -> TileContent
 
     let tileFromPix (x:int<pix>, y:int<pix>) = 
         int ((x + 6<pix>) / TileSize), 
@@ -77,9 +69,10 @@ module Board =
         | _ -> false
     
     let contains (scene: IScene) (item: IContent) = scene.Contents.Contains(item)
-
+            
     let tileAt (board: string []) x y =
-        if x < 0 || x > 30 then Nothing
+        if x < 0 || x > 30 
+        then Nothing
         else 
             let symbol = board.[y].[x]
             if symbol = '.' then Pill
@@ -87,6 +80,23 @@ module Board =
             elif (isWall symbol) then Wall
             else Nothing
 
+    let tileAnalyzer (board: string []) (scene: IScene) (tiles: IContent [][]) =
+        fun (x: int, y: int) ->
+            if x < 0 || x > 30 
+            then Nothing
+            else 
+                let symbol = board.[y].[x]
+                if (isWall symbol) then Wall
+                elif symbol = '.' then 
+                    if scene.Contents.Contains(tiles.[y].[x])
+                    then Pill
+                    else Nothing
+                elif symbol = 'o' then 
+                    if scene.Contents.Contains(tiles.[y].[x])
+                    then Power
+                    else Nothing                    
+                else Nothing
+            
     let creaturesAt pacman (ghosts: Ghost seq) (x, y) =
         [   let px, py, power = pacman
             if tileFromPix (px, py) = (x, y) then yield PacMan(power)
@@ -106,7 +116,7 @@ module Board =
             | Right -> tileFromPix (x + 5<pix>, y)
         tileAt board tx ty = Wall |> not     
 
-    let lineOfSight (board: string []) pacman ghosts (x: int<pix>, y: int<pix>) =
+    let lineOfSight (at: TileAt) pacman ghosts (x: int<pix>, y: int<pix>) =
         let X, Y = tileFromPix (x, y)
         let rec search line (x, y) (dx, dy) =
             let x = 
@@ -114,12 +124,14 @@ module Board =
                 elif x + dx < 0 then 30
                 else x + dx
             let y = y + dy
-            let tile = tileAt board x y
+            let tile = at (x, y)
             let creatures = creaturesAt pacman ghosts (x, y)
             let line' = (tile, creatures) :: line            
             if tile = Wall then line' else search line' (x, y) (dx, dy)
+
         let up = search [] (X, Y) (0, -1) |> List.rev
         let down = search [] (X, Y) (0, 1) |> List.rev
         let left = search [] (X, Y) (-1, 0) |> List.rev
         let right = search [] (X, Y) (1, 0) |> List.rev
+
         { Up = up; Down = down; Left = left; Right = right; }
