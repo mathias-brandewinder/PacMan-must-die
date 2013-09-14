@@ -236,6 +236,6 @@ type App() as this =
 #else
 module App =
     [<System.STAThread>]
-    do  let win = new Window(Title="PacMan", Content=GameControl(), SizeToContent=SizeToContent.WidthAndHeight)
+    do  let win = new Window(Title="PacMan", Content=GameControl())//, SizeToContent=SizeToContent.WidthAndHeight)
         (new Application()).Run(win) |> ignore
 #endif

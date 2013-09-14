@@ -71,7 +71,8 @@ module Board =
         int ((x + 6<pix>) / TileSize), 
         int ((y + 6<pix>) / TileSize)
 
-    let isWall = function
+    let isWall x =
+        match x with
         | '_' | '|' | '!' | '/' | '7' | 'L' | 'J' | '-' | '*' -> true
         | _ -> false
     
