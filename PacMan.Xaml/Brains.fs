@@ -39,7 +39,7 @@ module Brains =
         then randomMove restricted
         else randomMove choices
 
-    let pacmanDecision (current: Move) (lineOfSight: Sight) (choices: Move Set) =
+    let pacmanDecision (current: Move) (power: int) (lineOfSight: Sight) (choices: Move Set) =
         let restricted = 
             choices 
             |> Set.filter (fun c -> not (c = backwards current))
