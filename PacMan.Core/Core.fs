@@ -1,6 +1,7 @@
 ﻿namespace PacMan
 
-module Brains =
+[<AutoOpen>]
+module Core =
     
     open System
 
@@ -46,3 +47,14 @@ module Brains =
         if (restricted |> Set.count > 0)
         then randomMove restricted
         else randomMove choices
+
+type IPacManAI =
+    
+    // Decision is based on current move, power level, line of sight and possible moves
+    abstract member Decide : Move -> int -> Sight -> Move Set -> Move
+    abstract member Name: unit -> string
+
+type IGhostAI =
+    // Decision is based on current move, line of sight and possible moves
+    abstract member Decide : Move -> Sight -> Move Set -> Move
+    abstract member Name: unit -> string

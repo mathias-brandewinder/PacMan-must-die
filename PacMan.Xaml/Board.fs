@@ -53,7 +53,7 @@ type Ghost = {
 
 module Board =
 
-    open PacMan.Brains
+    open PacMan.Core
 
     let TileSize = 8<pix>
 
@@ -62,6 +62,21 @@ module Board =
     let tileFromPix (x:int<pix>, y:int<pix>) = 
         int ((x + 6<pix>) / TileSize), 
         int ((y + 6<pix>) / TileSize)
+
+    let dirToMove (dx: int<pix>, dy: int<pix>) =
+        match dx, dy with
+        | 0<pix>,-1<pix> -> Up
+        | 0<pix>, 1<pix> -> Down
+        | -1<pix>,0<pix> -> Left
+        | 1<pix>, 0<pix> -> Right
+        | _, _ -> invalidOp ""
+
+    let moveToDir move =
+        match move with
+        | Up    -> 0<pix>,-1<pix>
+        | Down  -> 0<pix>, 1<pix>
+        | Left  -> -1<pix>,0<pix>
+        | Right -> 1<pix>, 0<pix>
 
     let isWall = function
         | '_' | '|' | '!' | '/' | '7' | 'L' | 'J' | '-' | '*' -> true

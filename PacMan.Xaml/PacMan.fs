@@ -1,8 +1,8 @@
 ﻿namespace PacMan
 
-open PacMan.Ghosts
 open PacMan.Board
-open PacMan.Brains
+open PacMan.Core
+open PacMan.AI
 
 [<AutoOpen>]
 module Algorithm =
@@ -30,6 +30,10 @@ module Seq =
         |> Seq.readonly
 
 type Game(scene:IScene, input:IInput) =
+
+    let pacmanBrain = DefaultPacManAI () :> IPacManAI
+    let ghostsBrain = DefaultGhostAI () :> IGhostAI
+
     let createText text = scene.CreateText(text)
     let toBitmap color lines = scene.CreateBitmap(color,lines)
     let toImage (bitmap:IBitmap) = bitmap.CreateContent()
@@ -308,7 +312,7 @@ _______7./7 |      ! /7./_______
                 else
                     possible
                     |> Set.ofList
-                    |> ghostDecision (ghost.V |> dirToMove) view
+                    |> ghostsBrain.Decide (ghost.V |> dirToMove) view
                     |> fun d -> 
                         if (possible |> Set.ofSeq |> Set.contains d) 
                         then d 
@@ -359,7 +363,7 @@ _______7./7 |      ! /7./_______
             
         let current = dirToMove !v
 
-        let decision = pacmanDecision current powerCount view choices
+        let decision = pacmanBrain.Decide current powerCount view choices
         let decision = 
             if choices.Contains decision 
             then decision 

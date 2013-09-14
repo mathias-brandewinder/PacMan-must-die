@@ -147,9 +147,7 @@
     </Content>
     <Content Include="Properties\OutOfBrowserSettings.xml" />
     <Compile Include="Images.fs" />
-    <Compile Include="Brains.fs" />
     <Compile Include="Board.fs" />
-    <Compile Include="Ghosts.fs" />
     <Compile Include="PacMan.fs" />
     <Compile Include="App.fs" />
   </ItemGroup>
@@ -163,6 +161,18 @@
     <Reference Include="System.Xaml" />
     <Reference Include="UIAutomationTypes" />
     <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PacMan.AI\PacMan.AI.fsproj">
+      <Name>PacMan.AI</Name>
+      <Project>{26ed8c55-3a5b-493b-8c43-b2bead4d5055}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\PacMan.Core\PacMan.Core.fsproj">
+      <Name>PacMan.Core</Name>
+      <Project>{024c6ee0-f11d-4c87-be2f-2ad73987f1b8}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
 	     Other similar extension points exist, see Microsoft.Common.targets.
