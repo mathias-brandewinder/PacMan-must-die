@@ -33,9 +33,9 @@ module Brains =
 
     let pacManVisible options lineOfSight =
         let creaturesInDirection directionVector = directionVector |> List.collect snd
-        let isVulerablePacman (creature: Creature) = match creature with
-                                                           | PacMan(power) -> power < 1
-                                                           | _ -> false
+        let isVulerablePacman creature = match creature with
+                                               | PacMan(power) -> power < 1
+                                               | _ -> false
         let containsPacMan creatures = List.exists isVulerablePacman creatures
 
         if(Set.contains Up options && lineOfSight.Up |> creaturesInDirection |> containsPacMan) then Some Up
