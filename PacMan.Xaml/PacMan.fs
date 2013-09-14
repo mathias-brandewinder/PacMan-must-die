@@ -359,7 +359,7 @@ _______7./7 |      ! /7./_______
             
         let current = dirToMove !v
 
-        let decision = pacmanDecision current view choices
+        let decision = pacmanDecision current powerCount view choices
         let decision = 
             if choices.Contains decision 
             then decision 
