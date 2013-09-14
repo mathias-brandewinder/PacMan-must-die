@@ -53,21 +53,11 @@ type Ghost = {
 
 module Board =
 
+    open PacMan.Brains
+
     let TileSize = 8<pix>
 
-    type Move = Up | Down | Left | Right
-
-    type TileContent = Nothing | Wall | Power | Pill
-
-    type Creature = Nobody | PacMan of int | Ghost | WeakGhost
-
     type TileAt = (int * int) -> TileContent
-
-    type Sight = { 
-        Up:    (TileContent * Creature list) list;
-        Down:  (TileContent * Creature list) list;
-        Left:  (TileContent * Creature list) list;
-        Right: (TileContent * Creature list) list; }
 
     let tileFromPix (x:int<pix>, y:int<pix>) = 
         int ((x + 6<pix>) / TileSize), 
@@ -78,9 +68,7 @@ module Board =
         | _ -> false
     
     let contains (scene: IScene) (item: IContent) = scene.Contents.Contains(item)
-
             
-        
     let tileAt (board: string []) x y =
         if x < 0 || x > 30 
         then Nothing

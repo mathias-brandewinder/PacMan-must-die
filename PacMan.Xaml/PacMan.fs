@@ -2,6 +2,7 @@
 
 open PacMan.Ghosts
 open PacMan.Board
+open PacMan.Brains
 
 [<AutoOpen>]
 module Algorithm =
@@ -27,8 +28,6 @@ module Seq =
     let sortBy f xs = 
         System.Linq.Enumerable.OrderBy(xs,System.Func<_,_>(f))
         |> Seq.readonly
-
-
 
 type Game(scene:IScene, input:IInput) =
     let createText text = scene.CreateText(text)
@@ -238,7 +237,7 @@ _______7./7 |      ! /7./_______
     let mutable bonuses = []
     let x = ref (16 * TileSize - 7<pix>)
     let y = ref (24 * TileSize - 3<pix>)
-    let v = ref (0<pix>, 0<pix>)
+    let v = ref (0<pix>, 1<pix>) // PACMAN ALWAYS MOVES!
     let pacman = ref p
     do  add !pacman
     do  set !pacman (!x,!y)
@@ -309,7 +308,7 @@ _______7./7 |      ! /7./_______
                 else
                     possible
                     |> Set.ofList
-                    |> decision (ghost.V |> dirToMove) view
+                    |> ghostDecision (ghost.V |> dirToMove) view
                     |> fun d -> 
                         if (possible |> Set.ofSeq |> Set.contains d) 
                         then d 
@@ -341,13 +340,31 @@ _______7./7 |      ! /7./_______
         ghostCounter <- ghostCounter + 1
 
     let updatePacman () =
-        let inputs = 
-            [
-            if input.IsUp then yield canGoUp (!x,!y), (0<pix>,-1<pix>), pu
-            if input.IsDown then yield canGoDown (!x,!y), (0<pix>,1<pix>), pd
-            if input.IsLeft  then yield canGoLeft (!x,!y), (-1<pix>,0<pix>), pl
-            if input.IsRight then yield canGoRight (!x,!y), (1<pix>,0<pix>), pr
-            ] 
+        
+        let me = (!x, !y, powerCount)
+        let view = lineOfSight tileFrom me ghosts (!x, !y)
+
+        let pacmanDisplay move =
+            match move with
+            | Up    -> pu
+            | Down  -> pd
+            | Left  -> pl
+            | Right -> pr
+
+        let choices = [
+            if canGoUp (!x,!y) then yield Up
+            if canGoDown (!x,!y) then yield Down
+            if canGoLeft (!x,!y) then yield Left
+            if canGoRight (!x,!y) then yield Right ] |> Set.ofList
+            
+        let current = dirToMove !v
+
+        let decision = pacmanDecision current view choices
+        let decision = 
+            if choices.Contains decision 
+            then decision 
+            else randomMove choices
+
         let move ((dx,dy),(d1,d2)) =
             let x', y' = go (!x,!y) (dx,dy)
             x := x'; y := y'; v := (dx,dy)
@@ -355,24 +372,8 @@ _______7./7 |      ! /7./_______
             let d = if (!x/6<pix> + !y/6<pix>) % 2 = 0 then d1 else d2
             add d
             pacman := d
-        let availableDirections =
-            inputs
-            |> List.filter (fun (can,_,_) -> can)
-            |> List.map (fun (_,v,f) -> v,f)
-            |> Seq.sortBy (fun (v',_) -> v' = !v)
-        if Seq.length availableDirections > 0 then
-            availableDirections |> Seq.head |> move
-        else
-            let goForward =
-                match !v with
-                | 0<pix>,-1<pix> -> canGoUp(!x,!y), pu
-                | 0<pix>,1<pix>  -> canGoDown(!x,!y), pd
-                | -1<pix>,0<pix> -> canGoLeft(!x,!y), pl
-                | 1<pix>, 0<pix> -> canGoRight(!x,!y), pr
-                | 0<pix>, 0<pix> -> false, pu
-                | _ -> invalidOp ""
-            if fst goForward && inputs.Length > 0 then
-                (!v, snd goForward) |> move 
+
+        move ((moveToDir decision), (pacmanDisplay decision))
 
         let tx, ty = tileFromPix(!x, !y)
 
