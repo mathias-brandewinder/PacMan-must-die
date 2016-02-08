@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Xaml", "Xaml", "{8026F8AE-FDC7-4923-9BB8-AC9CA4A104AA}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "PacMan.WPF", "PacMan.Xaml\PacMan.WPF.fsproj", "{CD3CDA72-2FEF-4E10-A35E-AB5B1C3EF274}"
